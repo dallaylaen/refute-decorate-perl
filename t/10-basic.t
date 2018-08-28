@@ -6,6 +6,10 @@ use Test::More;
 use Test::Exception;
 
 BEGIN {
+    undef @ENV{qw{PERL_NDEBUG NDEBUG}};
+};
+
+BEGIN {
     package Foo;
     use Moo;
     has num => is => 'rw', default => sub { 0 };
@@ -26,16 +30,20 @@ set_method_contract (
     },
     args    => sub {
         package T;
-        use Assert::Refute qw(:all);
+        use Assert::Refute::Decorate;
+        use Assert::Refute::T::Basic;
         use Assert::Refute::T::Numeric;
         my ($contract, $obj, $arg, @rest) = @_;
+        $CTX{old} = $obj->num;
+        $CTX{delta} = $arg;
         is scalar @rest, 0, "No extra arguments";
         is_between $arg, -100, 100, "Small delta only";
     },
     return_scalar => sub {
         package T;
         my ($contract, $obj, $ret) = @_;
-        is $ret, $obj->num, "Return as expected";
+        cmp_ok $ret, "==", $CTX{old} + $CTX{delta}, "Return as expected";
+        is $ret, $obj->num, "Return reflected in obj";
         is_between $ret, -100, 100, "Small result only";
     },
 );
@@ -44,11 +52,11 @@ my $x = Foo->new;
 
 lives_ok {
     scalar $x->add(50);
-};
+} "Add lives";
 
 lives_ok {
     scalar $x->add(30);
-};
+} "Add lives (2)";
 
 is $x->num, 80, "num as expected";
 
