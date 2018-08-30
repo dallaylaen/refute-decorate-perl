@@ -20,34 +20,36 @@ BEGIN {
     };
 };
 
-use Assert::Refute::Decorate;
+{
+    package T; # don't pollute main as it has Test::More in it
+    use Assert::Refute qw(:all);
+    use Assert::Refute::Decorate;
+    use Assert::Refute::T::Numeric;
 
-set_method_contract (
-    module  => 'Foo',
-    method  => 'add',
-    on_fail => sub {
-        die $_[0]->get_tap;
-    },
-    args    => sub {
-        package T;
-        use Assert::Refute::Decorate;
-        use Assert::Refute::T::Basic;
-        use Assert::Refute::T::Numeric;
-        my ($contract, $obj, $arg, @rest) = @_;
-        $CTX{old} = $obj->num;
-        $CTX{delta} = $arg;
-        is scalar @rest, 0, "No extra arguments";
-        is_between $arg, -100, 100, "Small delta only";
-    },
-    return_scalar => sub {
-        package T;
-        my ($contract, $obj, $ret) = @_;
-        cmp_ok $ret, "==", $CTX{old} + $CTX{delta}, "Return as expected";
-        is $ret, $obj->num, "Return reflected in obj";
-        is_between $ret, -100, 100, "Small result only";
-    },
-);
+    set_method_contract (
+        module  => 'Foo',
+        method  => 'add',
+        on_fail => sub {
+            die $_[0]->get_tap;
+        },
+        args    => sub {
+            my ($contract, $obj, $arg, @rest) = @_;
+            $CTX{old} = $obj->num;
+            $CTX{delta} = $arg;
+            is scalar @rest, 0, "No extra arguments";
+            is_between $arg, -100, 100, "Small delta only";
+        },
+        return_scalar => sub {
+            my ($contract, $obj, $ret) = @_;
+            cmp_ok $ret, "==", $CTX{old} + $CTX{delta}, "Return as expected";
+            is $ret, $obj->num, "Return reflected in obj";
+            is_between $obj->num, -100, 100, "Small result only"
+                or $obj->num($CTX{old});
+        },
+    );
+};
 
+# main
 my $x = Foo->new;
 
 lives_ok {
@@ -70,6 +72,6 @@ throws_ok {
     scalar $x->add(30);
 } qr/not ok.*Small result/;
 
-is $x->num, 110, "num as expected";
+is $x->num, 80, "num reset to original";
 
 done_testing;
