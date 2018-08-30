@@ -21,26 +21,24 @@ sub set_method_contract(@) {
     my $orig = $target->can($name) or die "foobared";
     return $orig if $ENV{PERL_NDEBUG} // $ENV{NDEBUG};
 
-    my $args   = sub_to_contract($opt{args}, $on_fail);
-    my $void   = sub_to_contract($opt{return_void}, $on_fail); 
-    my $scalar = sub_to_contract($opt{return_scalar}, $on_fail);
-    my $array  = sub_to_contract($opt{return_array}, $on_fail); 
+    my $in     = sub_to_contract($opt{in}, $on_fail);
+    my $out    = sub_to_contract($opt{out}, $on_fail);
 
     my $newcode = sub {
         local %CTX;
-        $args->(@_);
+        $in->(@_);
 
         if (wantarray) {
             my @ret = $orig->(@_);
-            $array->($_[0], @ret);
+            my @unused = $out->(@ret);
             return @ret;
         } elsif( defined wantarray ) {
             my $ret = $orig->(@_);
-            $scalar->($_[0], $ret);
+            my $unused = $out->($ret);
             return $ret;
         } else {
             $orig->(@_);
-            $void->($_[0]);
+            $out->($_[0]);
             return;
         };
 
@@ -65,7 +63,6 @@ sub sub_to_contract {
         };
     };
 };
-
 
 1;
 

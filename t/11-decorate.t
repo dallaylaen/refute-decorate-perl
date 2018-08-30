@@ -5,10 +5,12 @@ use warnings;
 use Test::More;
 use Test::Exception;
 
+# Reset variables that affect refute
 BEGIN {
     undef @ENV{qw{PERL_NDEBUG NDEBUG}};
 };
 
+# The module to work on. This one is as stupid as possible.
 BEGIN {
     package Foo;
     use Moo;
@@ -20,6 +22,7 @@ BEGIN {
     };
 };
 
+# Let's add contract on top
 {
     package T; # don't pollute main as it has Test::More in it
     use Assert::Refute qw(:all);
@@ -32,19 +35,20 @@ BEGIN {
         on_fail => sub {
             die $_[0]->get_tap;
         },
-        args    => sub {
+        in      => sub {
             my ($contract, $obj, $arg, @rest) = @_;
-            $CTX{old} = $obj->num;
+            $CTX{self}  = $obj;
             $CTX{delta} = $arg;
+            $CTX{sum}   = $obj->num + $arg;
             is scalar @rest, 0, "No extra arguments";
             is_between $arg, -100, 100, "Small delta only";
+            is_between $CTX{sum}, -100, 100, "Small result only";
         },
-        return_scalar => sub {
-            my ($contract, $obj, $ret) = @_;
-            cmp_ok $ret, "==", $CTX{old} + $CTX{delta}, "Return as expected";
+        out     => sub {
+            my ($contract, $ret) = @_;
+            my $obj = $CTX{self};
+            cmp_ok $ret, "==", $CTX{sum}, "Return as expected";
             is $ret, $obj->num, "Return reflected in obj";
-            is_between $obj->num, -100, 100, "Small result only"
-                or $obj->num($CTX{old});
         },
     );
 };
