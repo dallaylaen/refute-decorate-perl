@@ -34,17 +34,23 @@ Here is how:
         },
     );
 
-=head1 EXPORT
+=head1 METHODS
 
 C<set_method_contract> and hash C<%CTX> are exported by default.
 
 =cut
 
+use Moo;
+use Carp;
+
 use Assert::Refute::Report;
 use parent 'Exporter';
 
-our @EXPORT = qw(set_method_contract %CTX);
 our %CTX;
+our @EXPORT = qw(%CTX);
+
+has module => is => 'rw';
+has on_fail => is => 'rw';
 
 =head2 set_method_contract(%)
 
@@ -73,11 +79,11 @@ Use it to communicate data between the two.
 =cut
 
 sub set_method_contract {
-    my (%opt) = @_;
+    my ($self, %opt) = @_;
 
-    my $target  = $opt{module};
+    my $target  = $opt{module}  || $self->module;
+    my $on_fail = $opt{on_fail} || $self->on_fail;
     my $name    = $opt{method};
-    my $on_fail = $opt{on_fail};
 
     my $orig = $target->can($name) or die "foobared";
     return $orig if $ENV{PERL_NDEBUG} // $ENV{NDEBUG};

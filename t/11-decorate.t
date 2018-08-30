@@ -29,12 +29,14 @@ BEGIN {
     use Assert::Refute::Decorate;
     use Assert::Refute::T::Numeric;
 
-    set_method_contract (
-        module  => 'Foo',
-        method  => 'add',
+    my $decorator = Assert::Refute::Decorate->new(
         on_fail => sub {
             die $_[0]->get_tap;
         },
+    );
+    $decorator->set_method_contract (
+        module  => 'Foo',
+        method  => 'add',
         in      => sub {
             my ($contract, $obj, $arg, @rest) = @_;
             $CTX{self}  = $obj;
