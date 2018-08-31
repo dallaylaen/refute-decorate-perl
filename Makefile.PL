@@ -16,10 +16,11 @@ WriteMakefile(
     },
     BUILD_REQUIRES => {
         'Test::More' => '0',
+        'Test::Deep' => 1.04,
     },
     PREREQ_PM => {
-        'Test::Deep' => 1.04,
         'Assert::Refute' => 0.13,
+        'Moo' => 0,
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean => { FILES => 'Assert-Refute-Decorate-*' },
