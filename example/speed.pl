@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 use Benchmark qw(cmpthese);
-use Assert::Refute::Decorate;
+use Assert::Refute::DbC;
 use Class::DbC;
 
 BEGIN {
@@ -24,7 +24,7 @@ BEGIN {
 {
     use namespace::local;
     use Assert::Refute::T::Basic;
-    my $refute = Assert::Refute::Decorate->new(
+    my $refute = Assert::Refute::DbC->new(
         module => "Foo::refute",
         on_fail => sub { die $_[0]->get_tap },
     );

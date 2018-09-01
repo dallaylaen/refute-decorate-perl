@@ -26,10 +26,10 @@ BEGIN {
 {
     package T; # don't pollute main as it has Test::More in it
     use Assert::Refute qw(:all);
-    use Assert::Refute::Decorate;
+    use Assert::Refute::DbC;
     use Assert::Refute::T::Numeric;
 
-    my $decorator = Assert::Refute::Decorate->new(
+    my $decorator = Assert::Refute::DbC->new(
         on_fail => sub {
             die $_[0]->get_tap;
         },

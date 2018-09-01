@@ -1,8 +1,8 @@
-Assert-Refute-Decorate
+Assert-Refute-DbC
 
 # NAME
 
-Assert::Refute::Decorate - Append Assert::Refute-based contracts to existing functions
+Assert::Refute::DbC - Append Assert::Refute-based contracts to existing functions
 
 # INSTALLATION
 
@@ -18,21 +18,21 @@ To install this module, run the following commands:
 After installing, you can find documentation for this module with the
 perldoc command.
 
-    perldoc Assert::Refute::Decorate
+    perldoc Assert::Refute::DbC
 
 You can also look for information at:
 
     RT, CPAN's request tracker (report bugs here)
-        http://rt.cpan.org/NoAuth/Bugs.html?Dist=Assert-Refute-Decorate
+        http://rt.cpan.org/NoAuth/Bugs.html?Dist=Assert-Refute-DbC
 
     AnnoCPAN, Annotated CPAN documentation
-        http://annocpan.org/dist/Assert-Refute-Decorate
+        http://annocpan.org/dist/Assert-Refute-DbC
 
     CPAN Ratings
-        http://cpanratings.perl.org/d/Assert-Refute-Decorate
+        http://cpanratings.perl.org/d/Assert-Refute-DbC
 
     Search CPAN
-        http://search.cpan.org/dist/Assert-Refute-Decorate/
+        http://search.cpan.org/dist/Assert-Refute-DbC/
 
 
 # LICENSE AND COPYRIGHT

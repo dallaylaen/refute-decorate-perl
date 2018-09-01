@@ -16,10 +16,10 @@ BEGIN {
 
 # Now we'd like to make sure certain conditions hold at runtime
 #     without modifying the original code
-use Assert::Refute::Decorate qw(%CTX);
+use Assert::Refute::DbC qw(%CTX);
 use Assert::Refute::T::Basic; # this imports ok, like & so on
 
-my $refute = Assert::Refute::Decorate->new(
+my $refute = Assert::Refute::DbC->new(
     module => "Foo",
     on_fail => sub {
         # Or this could be one's favorite logging engine

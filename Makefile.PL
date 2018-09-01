@@ -4,10 +4,10 @@ use warnings;
 use ExtUtils::MakeMaker;
 
 WriteMakefile(
-    NAME             => 'Assert::Refute::Decorate',
+    NAME             => 'Assert::Refute::DbC',
     AUTHOR           => q{Konstantin S. Uvarin <khedin@gmail.com>},
-    VERSION_FROM     => 'lib/Assert/Refute/Decorate.pm',
-    ABSTRACT_FROM    => 'lib/Assert/Refute/Decorate.pm',
+    VERSION_FROM     => 'lib/Assert/Refute/DbC.pm',
+    ABSTRACT_FROM    => 'lib/Assert/Refute/DbC.pm',
     LICENSE          => 'artistic_2',
     PL_FILES         => {},
     MIN_PERL_VERSION => '5.006',
@@ -23,5 +23,5 @@ WriteMakefile(
         'Moo' => 0,
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
-    clean => { FILES => 'Assert-Refute-Decorate-*' },
+    clean => { FILES => 'Assert-Refute-DbC-*' },
 );

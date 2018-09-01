@@ -1,4 +1,4 @@
-package Assert::Refute::Decorate;
+package Assert::Refute::DbC;
 
 use 5.008;
 use strict;
@@ -7,7 +7,7 @@ our $VERSION = '0.01';
 
 =head1 NAME
 
-Assert::Refute::Decorate - add Assert::Refute-based contract to existing method
+Assert::Refute::DbC - add Assert::Refute-based contract to existing method
 
 =head1 SYNOPSIS
 
@@ -17,7 +17,7 @@ certain invariants hold for this method, without altering C<Foo> source.
 Here is how:
 
     use Foo;
-    use Assert::Refute::Decorate;
+    use Assert::Refute::DbC;
     use Assert::Refute::T::Basic;
 
     set_method_contract (
@@ -151,7 +151,7 @@ Please report bugs via github or RT:
 
 =item * C<bug-assert-refute-t-deep at rt.cpan.org>
 
-=item * L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Assert-Refute-Decorate>
+=item * L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Assert-Refute-DbC>
 
 =back
 
@@ -159,7 +159,7 @@ Please report bugs via github or RT:
 
 You can find documentation for this module with the C<perldoc> command.
 
-    perldoc Assert::Refute::Decorate
+    perldoc Assert::Refute::DbC
 
 You can also look for information at:
 
@@ -167,19 +167,19 @@ You can also look for information at:
 
 =item * RT: CPAN's request tracker (report bugs here)
 
-L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Assert-Refute-Decorate>
+L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Assert-Refute-DbC>
 
 =item * AnnoCPAN: Annotated CPAN documentation
 
-L<http://annocpan.org/dist/Assert-Refute-Decorate>
+L<http://annocpan.org/dist/Assert-Refute-DbC>
 
 =item * CPAN Ratings
 
-L<http://cpanratings.perl.org/d/Assert-Refute-Decorate>
+L<http://cpanratings.perl.org/d/Assert-Refute-DbC>
 
 =item * Search CPAN
 
-L<http://search.cpan.org/dist/Assert-Refute-Decorate/>
+L<http://search.cpan.org/dist/Assert-Refute-DbC/>
 
 =back
 
@@ -226,5 +226,5 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =cut
 
-1; # End of Assert::Refute::Decorate
+1; # End of Assert::Refute::DbC
 
