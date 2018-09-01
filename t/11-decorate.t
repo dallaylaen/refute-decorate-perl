@@ -35,9 +35,9 @@ BEGIN {
         },
     );
     $decorator->set_method_contract (
-        module  => 'Foo',
-        method  => 'add',
-        in      => sub {
+        module   => 'Foo',
+        method   => 'add',
+        precond  => sub {
             my ($contract, $obj, $arg, @rest) = @_;
             $CTX{self}  = $obj;
             $CTX{delta} = $arg;
@@ -46,7 +46,7 @@ BEGIN {
             is_between $arg, -100, 100, "Small delta only";
             is_between $CTX{sum}, -100, 100, "Small result only";
         },
-        out     => sub {
+        postcond => sub {
             my ($contract, $ret) = @_;
             my $obj = $CTX{self};
             cmp_ok $ret, "==", $CTX{sum}, "Return as expected";

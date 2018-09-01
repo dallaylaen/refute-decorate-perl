@@ -21,15 +21,15 @@ Here is how:
     use Assert::Refute::T::Basic;
 
     set_method_contract (
-        module => 'Foo',
-        method => 'do_thing',
-        in     => sub {
+        module    => 'Foo',
+        method    => 'do_thing',
+        precond   => sub {
             ...
         },
-        out    => sub {
+        postcond  => sub {
             ...
         },
-        on_fail => sub {
+        on_fail   => sub {
             die $_[0]->get_tap;
         },
     );
@@ -66,14 +66,14 @@ Options may include:
 
 =item * on_fail(*) - what to do in case of failure
 
-=item * in  - BLOCK containing assertions about arguments.
+=item * precond  - BLOCK containing assertions about arguments.
 
-=item * out - BLOCK containing assertions about returned values.
+=item * postcond - BLOCK containing assertions about returned values.
 
 =back
 
-The C<%CTX> hash is localized before calling the C<in> callback,
-and untouched until C<out> callback is called.
+The C<%CTX> hash is localized before calling the C<precond> callback,
+and untouched until C<postcond> callback is called.
 Use it to communicate data between the two.
 
 =cut
@@ -88,24 +88,24 @@ sub set_method_contract {
     my $orig = $target->can($name) or die "foobared";
     return $orig if $ENV{PERL_NDEBUG} // $ENV{NDEBUG};
 
-    my $in     = _sub_to_contract($opt{in}, $on_fail);
-    my $out    = _sub_to_contract($opt{out}, $on_fail);
+    my $precond     = _sub_to_contract($opt{precond}, $on_fail);
+    my $postcond    = _sub_to_contract($opt{postcond}, $on_fail);
 
     my $newcode = sub {
         local %CTX;
-        $in->(@_);
+        $precond->(@_);
 
         if (wantarray) {
             my @ret = $orig->(@_);
-            my @unused = $out->(@ret);
+            my @unused = $postcond->(@ret);
             return @ret;
         } elsif( defined wantarray ) {
             my $ret = $orig->(@_);
-            my $unused = $out->($ret);
+            my $unused = $postcond->($ret);
             return $ret;
         } else {
             $orig->(@_);
-            $out->($_[0]);
+            $postcond->($_[0]);
             return;
         };
 

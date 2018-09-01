@@ -30,14 +30,14 @@ BEGIN {
     );
 
     $refute->set_method_contract(
-        method => "add",
-        in     => sub {
+        method   => "add",
+        precond  => sub {
             my ($report, $self, $arg, @rest) = @_;
             $CTX{self} = $self;
             is scalar @rest, 0, "No extra args";
             like $arg, qr/^[-+]?\d+$/, "Arg is integer";
         },
-        out    => sub {
+        postcond => sub {
             my ($report, $ret) = @_;
             return unless defined wantarray;
             is $ret, $CTX{self}->num, "Updated number returned";

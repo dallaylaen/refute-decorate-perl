@@ -28,8 +28,8 @@ my $refute = Assert::Refute::DbC->new(
 );
 
 $refute->set_method_contract(
-    method => "add",
-    in     => sub {
+    method    => "add",
+    precond   => sub {
         my ($report, $self, $arg, @rest) = @_;
 
         # save argument for future use
@@ -40,7 +40,7 @@ $refute->set_method_contract(
         is scalar @rest, 0, "No extra args";
         like $arg, qr/^[-+]?\d+$/, "Argument is integer";
     },
-    out    => sub {
+    postcond  => sub {
         my ($report, $ret) = @_;
 
         # wantarray is preserved.

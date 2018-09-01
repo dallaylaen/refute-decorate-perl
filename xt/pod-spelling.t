@@ -14,7 +14,7 @@ BEGIN {
             allow_words => [qw[
                 Konstantin Uvarin
                 github metacpan annocpan CPAN RT
-                TBD
+                precond postcond
             ]],
         }
     );
