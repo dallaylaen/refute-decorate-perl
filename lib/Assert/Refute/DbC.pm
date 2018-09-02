@@ -34,9 +34,12 @@ Here is how:
         },
     );
 
-=head1 METHODS
+=head1 EXPORT
 
-C<set_method_contract> and hash C<%CTX> are exported by default.
+A hash C<%CTX> are exported by default.
+It may be used for communication between precondition and postcondition.
+
+=head1 METHODS
 
 =cut
 
@@ -117,8 +120,6 @@ sub set_method_contract {
     # TODO copy prototype
     *{ $target."::".$name } = $newcode;
 };
-
-
 
 sub _sub_to_contract {
     my ($block, $callback) = @_;
