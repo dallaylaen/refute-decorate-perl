@@ -16,7 +16,7 @@ BEGIN {
 
 # Now we'd like to make sure certain conditions hold at runtime
 #     without modifying the original code
-use Assert::Refute::DbC qw(%CTX);
+use Assert::Refute::DbC;
 use Assert::Refute::T::Basic; # this imports ok, like & so on
 
 my $refute = Assert::Refute::DbC->new(
@@ -30,24 +30,24 @@ my $refute = Assert::Refute::DbC->new(
 $refute->set_method_contract(
     method    => "add",
     precond   => sub {
-        my ($report, $self, $arg, @rest) = @_;
+        my ($report, $ctx, $self, $arg, @rest) = @_;
 
         # save argument for future use
         # may use dclone() if needed
-        $CTX{self} = $self;
+        $ctx->{self} = $self;
 
         # equivalent to $report->is( ... )
         is scalar @rest, 0, "No extra args";
         like $arg, qr/^[-+]?\d+$/, "Argument is integer";
     },
     postcond  => sub {
-        my ($report, $ret) = @_;
+        my ($report, $ctx, $ret) = @_;
 
         # wantarray is preserved.
         return unless defined wantarray;
 
         # less stupid output condition wanted )
-        is $ret, $CTX{self}->num, "Updated number returned";
+        is $ret, $ctx->{self}->num, "Updated number returned";
     },
 );
 

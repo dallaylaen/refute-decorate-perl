@@ -36,23 +36,25 @@ is_deeply \@trace, [['', 12, 7], [1, 12, 7]], "trace worked";
     code     => \&foo,
     precond  => sub {
         my $report = shift;
+        my $ctx = shift;
 
         $report->is( scalar @_, 2, "2 arguments only" );
-        $report->ok( defined wantarray, "no void context" );
+        $report->ok( defined $ctx->{wantarray}, "no void context" );
         $report->like( $_[0], qr/^-?\d+$/, "1st arg integer" );
         $report->like( $_[1], qr/^-?\d+$/, "2nd arg integer" );
 
-        $CTX{0} = $_[0];
-        $CTX{1} = $_[1];
+        $ctx->{0} = $_[0];
+        $ctx->{1} = $_[1];
     },
     postcond => sub {
         my $report = shift;
+        my $ctx = shift;
 
         note explain \@_;
 
-        $report->is( scalar @_, (wantarray ? 2 : 1), "Return as requested" );
+        $report->is( scalar @_, ($ctx->{wantarray} ? 2 : 1), "Return as requested" );
 
-        $report->is( $_[-1], $CTX{0} + $CTX{1}, "Sum as expected" );
+        $report->is( $_[-1], $ctx->{0} + $ctx->{1}, "Sum as expected" );
     },
 );
 

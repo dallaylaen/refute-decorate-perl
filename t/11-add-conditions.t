@@ -38,18 +38,18 @@ BEGIN {
         module   => 'Foo',
         method   => 'add',
         precond  => sub {
-            my ($contract, $obj, $arg, @rest) = @_;
-            $CTX{self}  = $obj;
-            $CTX{delta} = $arg;
-            $CTX{sum}   = $obj->num + $arg;
+            my ($contract, $ctx, $obj, $arg, @rest) = @_;
+            $ctx->{self}  = $obj;
+            $ctx->{delta} = $arg;
+            $ctx->{sum}   = $obj->num + $arg;
             is scalar @rest, 0, "No extra arguments";
             is_between $arg, -100, 100, "Small delta only";
-            is_between $CTX{sum}, -100, 100, "Small result only";
+            is_between $ctx->{sum}, -100, 100, "Small result only";
         },
         postcond => sub {
-            my ($contract, $ret) = @_;
-            my $obj = $CTX{self};
-            cmp_ok $ret, "==", $CTX{sum}, "Return as expected";
+            my ($contract, $ctx, $ret) = @_;
+            my $obj = $ctx->{self};
+            cmp_ok $ret, "==", $ctx->{sum}, "Return as expected";
             is $ret, $obj->num, "Return reflected in obj";
         },
     );

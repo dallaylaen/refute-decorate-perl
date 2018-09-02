@@ -36,18 +36,17 @@ Here is how:
 
 =head1 EXPORT
 
-A hash C<%CTX> are exported by default.
-It may be used for communication between condition blocks.
+Nothing so far.
 
 =head1 CONDITION BLOCKS
 
-A condition block is a subroutine that receives a I<report> object
-and possibly other arguments.
+A I<condition block> is a subroutine that receives a I<report> object
+and a context hash and possibly other arguments.
 
 That report may then be used to record whether individual conditions hold:
 
     sub {
-        my ($report, $foo, $bar) = @_;
+        my ($report, $context, $foo, $bar) = @_;
         $report->cmp_ok( $foo, "<", $bar, "Arguments come in order" );
         # ...
     };
@@ -60,19 +59,16 @@ Report is likely a L<Assert::Refute::Report> instance.
 
 =head2 precond
 
-Receives the same arguments as the function being worked on (plus the report).
+Receives the same arguments as the function being worked on,
+plus the report and context.
 
-C<wantarray> is preserved.
-
-C<%CTX> is empty and may be populated.
+At the start, only C<$context-E<gt>{wantarray}> is present.
+Arbitrary keys may be added.
 
 =head2 postcond
 
-Receives whatever was returned by the function being worked on (plus the report).
-
-C<wantarray> is preserved.
-
-C<%CTX> is exactly as it was on precond's return.
+Receives whatever was returned by the function being worked on,
+plus the report and context with whatever changes precond made to it.
 
 =head1 METHODS
 
@@ -82,10 +78,6 @@ use Moo;
 use Carp;
 
 use Assert::Refute::Report;
-use parent 'Exporter';
-
-our %CTX;
-our @EXPORT = qw(%CTX);
 
 has module => is => 'rw';
 has on_fail => is => 'rw';
@@ -176,36 +168,23 @@ sub decorate {
     my $postcond    = _sub_to_contract($opt{postcond}, $on_fail);
 
     my $newcode = sub {
-        local %CTX;
+        my $context = { wantarray => wantarray };
+        $precond->($context, @_);
 
-        # propagate list/scalar/void context onto precond and postcond
+        # preserve scalar/list context
         if (wantarray) {
-            my @unused = $precond->(@_);
-            my @ret    = do {
-                local %CTX;
-                $orig->(@_);
-            };
-            @unused    = $postcond->(@ret);
+            my @ret = $orig->(@_);
+            $postcond->($context, @ret);
             return @ret;
         } elsif( defined wantarray ) {
-            my $unused = $precond->(@_);
-            my $ret    = do {
-                local %CTX;
-                $orig->(@_);
-            };
-            $unused    = $postcond->($ret);
+            my $ret = $orig->(@_);
+            $postcond->($context, $ret);
             return $ret;
         } else {
-            $precond->(@_);
-            do {
-                local %CTX;
-                $orig->(@_);
-            };
-            $postcond->();
+            $orig->(@_);
+            $postcond->($context);
             return;
         };
-
-        die "Unreachable, file a bug in ".__PACKAGE__;
     };
 };
 
@@ -219,22 +198,10 @@ sub _sub_to_contract {
     return sub {} unless $block and $callback;
 
     return sub {
-        my @arg = @_;
-        local $@;
-        local $DRIVER = Assert::Refute::Report->new;
-
-        # preserve context TODO do_run must do it instead
-        my $ok;
-        if (wantarray) {
-            $ok = eval { my @context = $block->( $DRIVER, @arg ); 1; };
-        } elsif (defined wantarray) {
-            $ok = eval { my $context = $block->( $DRIVER, @arg ); 1; };
-        } else {
-            $ok = eval { $block->( $DRIVER, @arg ); 1 };
-        };
-        $DRIVER->done_testing($ok ? 0 : ($@ || "Contract interrupted"));
-        if (!$DRIVER->is_passing) {
-            $callback->(my $report = $DRIVER, @_);
+        my $report = Assert::Refute::Report->new;
+        $report->do_run( $block, @_ );
+        if (!$report->is_passing) {
+            $callback->($report);
         };
     };
 };
