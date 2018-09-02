@@ -84,12 +84,35 @@ Use it to communicate data between the two.
 sub set_method_contract {
     my ($self, %opt) = @_;
 
-    my $target  = $opt{module}  || $self->module;
-    my $on_fail = $opt{on_fail} || $self->on_fail;
-    my $name    = $opt{method};
+    my $target  = delete $opt{module}  || $self->module;
+    my $name    = delete $opt{method};
 
-    my $orig = $target->can($name) or die "foobared";
-    return $orig if $ENV{PERL_NDEBUG} // $ENV{NDEBUG};
+    $opt{function} = $target->can($name);
+    croak "Cannot find sub $name in package $target"
+        unless $opt{function};
+
+    my $newcode = $self->decorate( %opt );
+
+    no strict 'refs';       ## no critic
+    no warnings 'redefine'; ## no critic
+    # TODO copy prototype
+    *{ $target."::".$name } = $newcode;
+};
+
+=head2 decorate
+
+Arm an existing function with contract and return generated code.
+
+=cut
+
+sub decorate {
+    my ($self, %opt) = @_;
+
+    my $on_fail = $opt{on_fail} || $self->on_fail;
+
+    my $orig = $opt{function};
+    croak "Argument 'function' must be a CODE reference and not ".(ref $orig || 'SCALAR')
+        unless UNIVERSAL::isa( $orig, 'CODE');
 
     my $precond     = _sub_to_contract($opt{precond}, $on_fail);
     my $postcond    = _sub_to_contract($opt{postcond}, $on_fail);
@@ -114,11 +137,6 @@ sub set_method_contract {
 
         die "Unreachable";
     };
-
-    no strict 'refs';       ## no critic
-    no warnings 'redefine'; ## no critic
-    # TODO copy prototype
-    *{ $target."::".$name } = $newcode;
 };
 
 sub _sub_to_contract {
