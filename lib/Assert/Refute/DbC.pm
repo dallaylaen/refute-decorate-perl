@@ -119,23 +119,35 @@ sub decorate {
 
     my $newcode = sub {
         local %CTX;
-        $precond->(@_);
 
+        # propagate list/scalar/void context onto precond and postcond
         if (wantarray) {
-            my @ret = $orig->(@_);
-            my @unused = $postcond->(@ret);
+            my @unused = $precond->(@_);
+            my @ret    = do {
+                local %CTX;
+                $orig->(@_);
+            };
+            @unused    = $postcond->(@ret);
             return @ret;
         } elsif( defined wantarray ) {
-            my $ret = $orig->(@_);
-            my $unused = $postcond->($ret);
+            my $unused = $precond->(@_);
+            my $ret    = do {
+                local %CTX;
+                $orig->(@_);
+            };
+            $unused    = $postcond->($ret);
             return $ret;
         } else {
-            $orig->(@_);
-            $postcond->($_[0]);
+            $precond->(@_);
+            do {
+                local %CTX;
+                $orig->(@_);
+            };
+            $postcond->();
             return;
         };
 
-        die "Unreachable";
+        die "Unreachable, file a bug in ".__PACKAGE__;
     };
 };
 
