@@ -37,7 +37,42 @@ Here is how:
 =head1 EXPORT
 
 A hash C<%CTX> are exported by default.
-It may be used for communication between precondition and postcondition.
+It may be used for communication between condition blocks.
+
+=head1 CONDITION BLOCKS
+
+A condition block is a subroutine that receives a I<report> object
+and possibly other arguments.
+
+That report may then be used to record whether individual conditions hold:
+
+    sub {
+        my ($report, $foo, $bar) = @_;
+        $report->cmp_ok( $foo, "<", $bar, "Arguments come in order" );
+        # ...
+    };
+
+Return value is ignored. Instead, a callback is fired based on report's status.
+
+Dying is intercepted but will cause the contract to fail unconditionally.
+
+Report is likely a L<Assert::Refute::Report> instance.
+
+=head2 precond
+
+Receives the same arguments as the function being worked on (plus the report).
+
+C<wantarray> is preserved.
+
+C<%CTX> is empty and may be populated.
+
+=head2 postcond
+
+Receives whatever was returned by the function being worked on (plus the report).
+
+C<wantarray> is preserved.
+
+C<%CTX> is exactly as it was on precond's return.
 
 =head1 METHODS
 
@@ -75,6 +110,9 @@ Options may include:
 
 =back
 
+Parameters marked with (*) MUST be specified either here,
+or in constructor.
+
 The C<%CTX> hash is localized before calling the C<precond> callback,
 and untouched until C<postcond> callback is called.
 Use it to communicate data between the two.
@@ -99,9 +137,26 @@ sub set_method_contract {
     *{ $target."::".$name } = $newcode;
 };
 
-=head2 decorate
+=head2 decorate(%)
 
 Arm an existing function with contract and return generated code.
+
+Options may include:
+
+=over
+
+=item * function (required) - the function to work on
+
+=item * on_fail(*) - what to do in case of failure
+
+=item * precond  - BLOCK containing assertions about arguments.
+
+=item * postcond - BLOCK containing assertions about returned values.
+
+=back
+
+Parameters marked with (*) MUST be specified either here,
+or in constructor.
 
 =cut
 
