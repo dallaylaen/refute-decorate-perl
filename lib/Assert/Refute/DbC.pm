@@ -125,9 +125,9 @@ sub set_method_contract {
     my $target  = delete $opt{module}  || $self->module;
     my $name    = delete $opt{method};
 
-    $opt{function} = $target->can($name);
+    $opt{code} = $target->can($name);
     croak "Cannot find sub $name in package $target"
-        unless $opt{function};
+        unless $opt{code};
 
     my $newcode = $self->decorate( %opt );
 
@@ -145,7 +145,7 @@ Options may include:
 
 =over
 
-=item * function (required) - the function to work on
+=item * code (required) - the function to work on
 
 =item * on_fail(*) - what to do in case of failure
 
@@ -163,10 +163,13 @@ or in constructor.
 sub decorate {
     my ($self, %opt) = @_;
 
+    croak "Useless use of decorate() in void context"
+        unless defined wantarray;
+
     my $on_fail = $opt{on_fail} || $self->on_fail;
 
-    my $orig = $opt{function};
-    croak "Argument 'function' must be a CODE reference and not ".(ref $orig || 'SCALAR')
+    my $orig = $opt{code};
+    croak "Argument 'code' must be a CODE reference and not ".(ref $orig || 'SCALAR')
         unless UNIVERSAL::isa( $orig, 'CODE');
 
     my $precond     = _sub_to_contract($opt{precond}, $on_fail);
@@ -206,16 +209,32 @@ sub decorate {
     };
 };
 
+# Alias
+our $DRIVER;
+BEGIN { *DRIVER = *Assert::Refute::DRIVER; };
+
 sub _sub_to_contract {
     my ($block, $callback) = @_;
 
     return sub {} unless $block and $callback;
 
     return sub {
-        my $report = Assert::Refute::Report->new;
-        $report->do_run($block, @_);
-        if (!$report->is_passing) {
-            $callback->($report, @_);
+        my @arg = @_;
+        local $@;
+        local $DRIVER = Assert::Refute::Report->new;
+
+        # preserve context TODO do_run must do it instead
+        my $ok;
+        if (wantarray) {
+            $ok = eval { my @context = $block->( $DRIVER, @arg ); 1; };
+        } elsif (defined wantarray) {
+            $ok = eval { my $context = $block->( $DRIVER, @arg ); 1; };
+        } else {
+            $ok = eval { $block->( $DRIVER, @arg ); 1 };
+        };
+        $DRIVER->done_testing($ok ? 0 : ($@ || "Contract interrupted"));
+        if (!$DRIVER->is_passing) {
+            $callback->(my $report = $DRIVER, @_);
         };
     };
 };
