@@ -172,19 +172,19 @@ sub decorate {
         $precond->($context, @_);
 
         # preserve scalar/list context
+        my @ret;
         if (wantarray) {
-            my @ret = $orig->(@_);
+            @ret = $orig->(@_);
             $postcond->($context, @ret);
             return @ret;
         } elsif( defined wantarray ) {
-            my $ret = $orig->(@_);
-            $postcond->($context, $ret);
-            return $ret;
+            $ret[0] = $orig->(@_);
         } else {
             $orig->(@_);
-            $postcond->($context);
-            return;
         };
+
+        $postcond->($context, @ret);
+        return $ret[0];
     };
 };
 
@@ -211,9 +211,6 @@ sub _sub_to_contract {
 Konstantin S. Uvarin, C<< <khedin at gmail.com> >>
 
 =head1 BUGS
-
-This module should be merged into either Assert::Refute or Test::Deep.
-Suggestions welcome.
 
 Please report bugs via github or RT:
 
