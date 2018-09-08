@@ -30,10 +30,11 @@ my $refute = Assert::Refute::DbC->new(
 $refute->set_method_contract(
     method    => "add",
     precond   => sub {
-        my ($report, $ctx, $self, $arg, @rest) = @_;
+        my ($report, $self, $arg, @rest) = @_;
 
         # save argument for future use
         # may use dclone() if needed
+        my $ctx = $report->context;
         $ctx->{self} = $self;
 
         # equivalent to $report->is( ... )
@@ -41,10 +42,12 @@ $refute->set_method_contract(
         like $arg, qr/^[-+]?\d+$/, "Argument is integer";
     },
     postcond  => sub {
-        my ($report, $ctx, $ret) = @_;
+        my ($report, $ret) = @_;
 
-        # wantarray is preserved.
-        return unless defined wantarray;
+        my $ctx = $report->context;
+
+        # wantarray is preserved in context.
+        return unless defined $ctx->{wantarray};
 
         # less stupid output condition wanted )
         is $ret, $ctx->{self}->num, "Updated number returned";

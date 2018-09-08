@@ -38,7 +38,8 @@ BEGIN {
         module   => 'Foo',
         method   => 'add',
         precond  => sub {
-            my ($contract, $ctx, $obj, $arg, @rest) = @_;
+            my ($report, $obj, $arg, @rest) = @_;
+            my $ctx = $report->context;
             $ctx->{self}  = $obj;
             $ctx->{delta} = $arg;
             $ctx->{sum}   = $obj->num + $arg;
@@ -47,7 +48,8 @@ BEGIN {
             is_between $ctx->{sum}, -100, 100, "Small result only";
         },
         postcond => sub {
-            my ($contract, $ctx, $ret) = @_;
+            my ($report, $ret) = @_;
+            my $ctx = $report->context;
             my $obj = $ctx->{self};
             cmp_ok $ret, "==", $ctx->{sum}, "Return as expected";
             is $ret, $obj->num, "Return reflected in obj";

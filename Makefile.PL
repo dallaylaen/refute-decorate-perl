@@ -19,7 +19,7 @@ WriteMakefile(
         'Test::Deep' => 1.04,
     },
     PREREQ_PM => {
-        'Assert::Refute' => 0.13,
+        'Assert::Refute' => 0.14,
         'Moo' => 0,
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },

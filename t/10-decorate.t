@@ -36,7 +36,7 @@ is_deeply \@trace, [['', 12, 7], [1, 12, 7]], "trace worked";
     code     => \&foo,
     precond  => sub {
         my $report = shift;
-        my $ctx = shift;
+        my $ctx = $report->context;
 
         $report->is( scalar @_, 2, "2 arguments only" );
         $report->ok( defined $ctx->{wantarray}, "no void context" );
@@ -48,7 +48,7 @@ is_deeply \@trace, [['', 12, 7], [1, 12, 7]], "trace worked";
     },
     postcond => sub {
         my $report = shift;
-        my $ctx = shift;
+        my $ctx = $report->context;
 
         note explain \@_;
 

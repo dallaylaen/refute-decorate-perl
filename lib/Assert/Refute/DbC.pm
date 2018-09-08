@@ -46,7 +46,9 @@ and a context hash and possibly other arguments.
 That report may then be used to record whether individual conditions hold:
 
     sub {
-        my ($report, $context, $foo, $bar) = @_;
+        my ($report, $foo, $bar) = @_;
+        my $context = $report->context;
+        $report->ok( defined $context->{wantarray}, "Not void context");
         $report->cmp_ok( $foo, "<", $bar, "Arguments come in order" );
         # ...
     };
@@ -55,20 +57,24 @@ Return value is ignored. Instead, a callback is fired based on report's status.
 
 Dying is intercepted but will cause the contract to fail unconditionally.
 
-Report is likely a L<Assert::Refute::Report> instance.
+Report is likely an L<Assert::Refute::Report> instance.
 
 =head2 precond
 
-Receives the same arguments as the function being worked on,
-plus the report and context.
+Receives the report object, followed by function's normal arguments.
+
+Report has C<context> method for communicating between pre-
+and post-conditions.
 
 At the start, only C<$context-E<gt>{wantarray}> is present.
 Arbitrary keys may be added.
 
 =head2 postcond
 
-Receives whatever was returned by the function being worked on,
-plus the report and context with whatever changes precond made to it.
+Receives the report object, followed by the function's return.
+
+Context in the report is retained from C<precond> call,
+but it's a fresh report object.
 
 =head1 METHODS
 
@@ -77,7 +83,7 @@ plus the report and context with whatever changes precond made to it.
 use Moo;
 use Carp;
 
-use Assert::Refute::Report;
+use Assert::Refute::Report 0.14;
 
 has module => is => 'rw';
 has on_fail => is => 'rw';
@@ -198,7 +204,9 @@ sub _sub_to_contract {
     return sub {} unless $block and $callback;
 
     return sub {
+        my $context = shift;
         my $report = Assert::Refute::Report->new;
+        $report->set_context( $context );
         $report->do_run( $block, @_ );
         if (!$report->is_passing) {
             $callback->($report);
